@@ -1,0 +1,81 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_ORIGINS=*
+
+  crawl4ai:
+    image: unclecode/crawl4ai@sha256:b33e98fba44182409a99a84db655c152344be710e3bd9e97079004375a90148a
+    container_name: crawl4ai_service
+    hostname: crawl4ai-docker
+    restart: unless-stopped
+    ports:
+      - "11235:11235"
+    shm_size: "2g"
+    networks:
+      - default
+    volumes:
+      - crawl4ai_cache:/app/cache
+    environment:
+      - LOG_LEVEL=INFO # Or DEBUG for more verbosity
+      - TZ=America/New_York
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: '12g'
+
+  scrapper:
+    image: amerkurev/scrapper@sha256:81b32d7f282ff298e1c4413f6374e5806c41e7fc757c89940032b0e952111ede
+    container_name: web_scrapper_service
+    hostname: scrapper-docker
+    restart: unless-stopped
+    ports:
+      - "8003:3000"
+    volumes:
+      - scrapper_data:/home/pwuser/user_data
+      - scrapper_scripts:/home/pwuser/user_scripts
+    networks:
+      - default
+    environment:
+      - LOG_LEVEL=info
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: '12g'
+
+  searxng:
+    image: searxng/searxng@sha256:2ae57bba39cab585f5c7a1223dd51eb6494fa6febd67b871d4bddf52fce08f16
+    container_name: private_search_service
+    hostname: searxng-docker
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./searxng_config:/etc/searxng:rw
+    networks:
+      - default
+    environment:
+      - INSTANCE_NAME="My Private SearXNG"
+      - TZ=America/New_York
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: '12g'
+
+volumes:
+  ollama_data: {}
+  scrapper_data: {}
+  scrapper_scripts: {}
+  crawl4ai_cache: {}
+
+networks:
+  default:
+    driver: bridge
