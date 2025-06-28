@@ -1,0 +1,15 @@
+*.log
+*.db
+*.sqlite
+.env
+db_password.txt
+*.pem
+*.key
+.DS_Store
+# Ignore application data folders (add your own as needed)
+ollama_data/
+*.save
+searxng_config/
+!searxng_config/settings.yml
+!searxng_config/uwsgi.ini
+
